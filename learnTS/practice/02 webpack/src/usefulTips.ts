@@ -68,6 +68,7 @@ function showType(args: NonNullable<NonNullableType>) {
 
 console.log('xx');
 
+// 将类型都改为string
 type StringMap<T> = {
     [P in keyof T]: string
 }
