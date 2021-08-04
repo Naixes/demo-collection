@@ -11,11 +11,13 @@
 	function throttle (fn, delay) {
 		// 执行标志
 		let canUse = true
-		return function () {
+		return function (...args) {
 			if (canUse) {
 				canUse = false
-				fn.call(this, arguments)
-				setTimeout(()=>canUse = true, delay)
+				timerId = setTimeout(()=> {
+					fn.apply(this, args)
+					canUse = true
+				}, delay)
 			}
 		}
 	}
@@ -42,28 +44,70 @@
 		alert(1)
 	}, 3000))
 
+	// 节流，一段时间内最多执行一次
+	function trottle(fn, delay) {
+	let timerId
+	let execDate = getTime()
+	let lastThis
+	let lastArgs
+	let result
+	function execFn() {
+			result = fn.call(lastThis, lastArgs)
+		execDate = getTime()
+		return result
+	}
+	return function(...args) {
+		lastThis = this
+		lastArgs = args
+		//首次立即执行
+		if(timerId === 'undefined') {
+			execFn()
+		}else {
+			const current = getTime()
+			// 清除计时器
+			timerId && clearTimeout(timerId)
+			// 判断是否超过delay
+			if(current - execDate > delay) {
+				// 超过直接执行
+				execFn()
+			}else {
+				// 没超过设置定时器
+				const wait = delay - (current - execDate)
+				timerId = setTomeout(() => {
+				execFn()
+				}, wait)
+			}
+			}
+			return result
+		}
+	}
+	function getTime() {
+		return + new Date()
+	}
 
-	// function throttle (fn, delay) {
-	// 	let canUse = true 
-	// 	return function() {
-	// 		if (canUse) {
-	// 			canUse = false
-	// 			fn.call(this, arguments)
-	// 			setTimeout(()=> {
-	// 				canUse = true
-	// 			}, delay)
-	// 		}
-	// 	}
-	// }
-	// function debounce (fn, delay) {
-	// 	let timerId = null
-	// 	return function () {
-	// 		if(timerId) window.clearTimeout(timerId)
-	// 		setTimeout(()=> {
-	// 			fn.call(this, arguments)
-	// 			timerId = null
-	// 		}, delay)
-	// 	}
-	// }
+	// 简化版，区别：第一次没有立刻执行，超过时间也还是会创建定时器
+	function throttle(fn, delay) {
+		let flag = true
+		return function(...args) {
+			if(flag) {
+			flag = false
+			setTimeout = (() => {
+				fn.apply(this, args)
+				flag = true
+			}, delay)
+			}
+		}
+	}
+
+	// 防抖，触发结束一段时间后才执行
+	function debounce(fn, delay) {
+		let timerId = ''
+		return function(...args) {
+			timerId && clearTimeout(timer)
+			timerId = setTimeout(() => {
+			fn.apply(this, args)
+			}, delay)
+		}
+	}
 </script>
 </html>
