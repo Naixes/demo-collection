@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dom内存泄漏</title>
+  </head>
+  <body>
+    <!--只有同时满足 DOM 树和 JavaScript 代码都不引用某个 DOM 节点，该节点才会被作为垃圾进行回收。 
+        如果某个节点已从 DOM 树移除，但 JavaScript 仍然引用它，我们称此节点为“detached ”。
+        因为 DOM 元素依然会呆在内存中。
+        “detached ”节点是 DOM 内存泄漏的常见原因。-->
+    <script>
+      //万万记得避免全局变量 "use strict"
+      //同时也要避免在函数内部不使用var的声明
+      let detachedTree;
+      function create() {
+        var ul = document.createElement('ul');
+        for (var i = 0; i < 100; i++) {
+          var li = document.createElement('li');
+          ul.appendChild(li);
+        }
+        detachedTree = ul;
+      }
+      create();
+      detachedTree = null;
+    </script>
+  </body>
+</html>

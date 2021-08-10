@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>游离的DOM元素2</title>
+  </head>
+  <body>
+    <script>
+      function createElement() {
+        const div = document.createElement('div');
+        div.id = 'yideng';
+        return div;
+      }
+      // this will keep referencing the DOM element even after deleteElement() is called
+      //function appendElement() {
+      const detachedDiv = createElement();
+      document.body.appendChild(detachedDiv);
+      // }
+      // appendElement();
+      function deleteElement() {
+        document.body.removeChild(document.getElementById('detached'));
+      }
+      deleteElement(); // Heap snapshot will show detached div#detached
+    </script>
+  </body>
+</html>

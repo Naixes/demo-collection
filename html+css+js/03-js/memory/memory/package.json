@@ -1,0 +1,15 @@
+{
+  "name": "yd-memory-performance",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": " ./wrk -t12 -c800 -d30s http://127.0.0.1:3000/buffer"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "memeye": "^1.0.3"
+  }
+}

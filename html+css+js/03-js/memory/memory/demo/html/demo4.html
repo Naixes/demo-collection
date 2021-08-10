@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dom内存泄漏</title>
+  </head>
+  <body>
+    <script>
+      //清除定时器⏲否则永远会保持对函数的引用
+      function setCallback() {
+        // 'unpacking' the data object
+        let counter = 0;
+        const hugeString = new Array(100000).join('x'); // gets removed when the setCallback returns
+        return function cb() {
+          counter++; // only counter is part of the callback's scope
+          console.log(counter);
+        };
+      }
+      const timerId = setInterval(setCallback(), 1000); // saving the interval ID
+      clearInterval(timerId); // stopping the timer i.e. if button pressed
+    </script>
+  </body>
+</html>

@@ -1,3 +1,4 @@
+// 允许V8原生方法
 // node --allow-natives-syntax
 function Class(val) {
   this.prop = val;
