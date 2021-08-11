@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>测试视窗内</title>
+</head>
+
+<body>
+        Resource Hints 
+        1.1. DNS Prefetch
+        1.2. Preconnect
+        1.3. Prefetch
+        1.4. Prerender
+    <a href="/">测试</a>
+    <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br />
+    <br /> <br /> <br /> <br />
+    <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br />
+    <br /> <br /> <br />
+    <br /> <br /> <br /> <br />
+    <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br /> <br />
+    <br /> <br /> <br />
+    <a href="/">百度一下</a>
+    <script>
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const link = entry.target;
+                    console.log(link);
+                    // 预加载链接
+                }
+            });
+        });
+
+        // 对所有 a 标签添加观察者
+        Array.from(document.querySelectorAll('a'), link => {
+            observer.observe(link);
+        });
+    </script>
+</body>
+
+</html>

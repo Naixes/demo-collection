@@ -1,0 +1,58 @@
+https://juejin.im/entry/59b1e1156fb9a02493224cbd
+https://www.jianshu.com/p/5551a8902bdf
+https://zhuanlan.zhihu.com/p/25459319
+https://developers.google.com/web/fundamentals/codelabs/your-first-pwapp/?hl=zh-cn#firebase
+翻译如上
+https://www.w3cplus.com/pwa/your-first-pwapp.html
+https://www.kymjs.com/code/2017/02/18/01/
+webpack工具
+Service Worker-precache-webpack-plugin    offline-plugin
+
+实战1
+https://zhuanlan.zhihu.com/p/25459319
+实战2
+http://www.zcfy.cc/article/introduction-to-progressive-web-apps-offline-first-part-1-2399.html
+sw-router
+
+
+https://lavas.baidu.com/
+
+
+// short_name: 应用展示的名字
+
+// icons: 定义不同尺寸的应用图标
+
+// start_url: 定义桌面启动的 URL
+
+// description: 应用描述，可以参考 meta 中的 description
+
+// display: 定义应用的显示方式，有 4 种显示方式，分别为：
+
+// fullscreen: 全屏
+
+// standalone: 应用
+
+// minimal-ui: 类似于应用模式，但比应用模式多一些系统导航控制元素，但又不同于浏览器模式
+
+// browser: 浏览器模式，默认值
+
+// name: 应用名称
+
+// orientation: 定义默认应用显示方向，竖屏、横屏
+
+// prefer_related_applications: 是否设置对应移动应用，默认为 false
+
+// related_applications: 获取移动应用的方式
+
+// background_color: 应用加载之前的背景色，用于应用启动时的过渡
+
+// theme_color: 定义应用默认的主题色
+
+// dir: 文字方向，3 个值可选 ltr(left-to-right), rtl(right-to-left) 和 auto(浏览器判断)，默认为 auto
+
+// lang: 语言
+
+// scope: 定义应用模式下的路径范围，超出范围会已浏览器方式显示
+
+
+
