@@ -69,7 +69,7 @@
 		<div class="right float">right</div>
 		<div class="main float">main</div>
 	</section>
-	<h3>负边距+浮动实现三栏布局，中间部分最先渲染（双飞翼布局），居中不好布局</h3>
+	<h3>负边距+浮动实现三栏布局，中间部分最先渲染（双飞翼布局），居中不好布局，注意等高</h3>
 	<style type="text/css">
 		section.mar_float>div {
 			/* height: 300px; */
@@ -91,7 +91,9 @@
 		}
 		.main_inner.mar_float{
 			background-color: red;
+            height: 100%;
 			margin-left: 100px;
+			margin-right: 200px;
 		}
 		.left.mar_float {
 			width: 100px;
