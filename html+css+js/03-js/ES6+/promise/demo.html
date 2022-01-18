@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+</body>
+<script>
+    const PENDING = "Pending"
+    const FULFILLED = "Fulfilled"
+    const REJECTED = "Rejected"
+
+    function promiseResolutionProcedure(promise2, x, resolve, reject) {
+        // 循环引用
+        if(promise2 === x) {
+            throw new Error('cycle')
+        }
+        // Promise
+        if(x instanceof MyPromise) {
+            if(x.state === PENDING) {
+                x.then(y => {
+                    promiseResolutionProcedure(promise2, y, resolve, reject)
+                })
+            }else {
+                x.state === FULFILLED && resolve(x.value)
+                x.state === REJECTED && reject(x.value)
+            }
+        }
+        // thenable
+        if((typeof x === 'function' || typeof x === 'object') && x !== null) {
+            if(typeof x.then === 'function') {
+                x.then(y => {
+                    promiseResolutionProcedure(promise2, y, resolve, reject)
+                })
+            }else {
+                resolve(x)
+            }
+        }else {
+            resolve(x)
+        }
+    }
+
+    class MyPromise{
+        constructor(fn) {
+            this.state = PENDING
+            this.value = null
+            this.resolvedCallbacks = []
+            this.rejectedCallbacks = []
+
+            function resolve(val) {
+                if((typeof val === 'object' || typeof val === 'function') && val !==null && val.then) {
+                    promiseResolutionProcedure(this, val, resolve, reject)
+                    return
+                }
+                setTimeout(() => {
+                    if(this.state === PENDING) {
+                        this.state = FULFILLED
+                        this.value = val
+                        this.resolvedCallbacks.map(cb => cb())
+                    }
+                })
+            }
+
+            function reject(val) {
+                if((typeof val === 'object' || typeof val === 'function') && val !==null && val.then) {
+                    promiseResolutionProcedure(this, val, resolve, reject)
+                    return
+                }
+                setTimeout(() => {
+                    this.state = REJECTED
+                    this.value = val
+                    this.rejectedCallbacks.map(cb => cb())
+                })
+            }
+
+            fn(resolve, reject)
+        }
+
+        static all(promisArr) {
+            return new Promise((resolve, reject) => {
+                const resArr = []
+                let successTime = 0
+                function processSuccess(i, data) {
+                    resArr.push(data)
+                    successTime++
+                    if(successTime === promisArr.length) {
+                        resolve(resArr)
+                    }
+                }
+                for (let index = 0; index < promiseArr.length; index++) {
+                    promisArr[index].then(data => {
+                        processSuccess(i, data)
+                    }, err => {
+                        reject(err)
+                    })
+                }
+            })
+        }
+
+        then(onFulfilled = val => val, onRejected = err => {throw new Error(err)}) {
+            const promise2 = null
+            if(this.state === FULFILLED) {
+                promise2 = new MyPromise((resolve, reject) => {
+                    const res = onFulfilled(this.value)
+                    promiseResolutionProcedure(promise2, res, resolve, reject)
+                })
+            }
+            if(this.state === REJECTED) {
+                promise2 = new MyPromise((resolve, reject) => {
+                    const res = onRejected(this.value)
+                    promiseResolutionProcedure(promise2, res, resolve, reject)
+                })
+            }
+            if(this.state === PENDING) {
+                promise2 = new MyPromise((resolve, reject) => {
+                    const res = onFulfilled(this.value)
+                    promiseResolutionProcedure(promise2, res, resolve, reject)
+                })
+            }
+        }
+    }
+</script>
+<script>
+</script>
+</html>

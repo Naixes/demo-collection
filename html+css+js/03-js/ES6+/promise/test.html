@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+</body>
+<script>
+    const PENDING = "Pending"
+    const FULFILLED = "Fulfilled"
+    const REJECTED = "Rejected"
+
+    // 解决过程
+    function promiseResolutionProcedure(promise2, res, resolve, reject) {
+        if(res === promise2) {
+            throw new Error('cycle')
+        }
+        // 判断x是MyPromise
+        if(res instanceof MyPromise) {
+            // 判断状态
+            if(res.state === PENDING) {
+                res.then(y => {
+                    promiseResolutionProcedure(promise2, y, resolve, reject)
+                }, reject)
+            }else {
+                res.state === FULFILLED && resolve(res.value)
+                res.state === REJECTED && reject(res.value)
+            }
+        }
+        // x是对象或者函数
+        if((typeof res === 'object' || typeof res === 'function') && typeof res !== null) {
+            // 判断res是thenable对象
+            if(typeof res.then === 'function') {
+                // 执行then并注入执行resolve的方法
+                res.then(y => {
+                    // 这里也要对y进行同样的判断和操作，即规范中的解决过程promiseResolutionProcedure
+                    // resolve(y)
+                    promiseResolutionProcedure(promise2, y, resolve, reject)
+                }, reject)
+            }else {
+                resolve(res)
+            }
+        }else {
+            resolve(res)
+        }
+    }
+
+    class MyPromise {
+        constructor(fn) {
+            this.state = PENDING
+            this.value = undefined
+            this.resolvedCallbacks = []
+            this.rejectedCallbacks = []
+
+            const resolve = (val) => {
+                // 判断val是否Promise
+                if((typeof val === 'object' || typeof val === 'function') && val.then) {
+                    promiseResolutionProcedure(this, val, resolve, reject)
+                    return
+                }
+
+                // 实现同步resolve
+                setTimeout(() => {
+                    // 防止多次resolve
+                    if(this.state === PENDING) {
+                        this.state = FULFILLED
+                        this.value = val
+                        // 执行所有的resolvedCallbacks
+                        // value在then中已经传过了并执行了fn
+                        this.resolvedCallbacks.map(fn => fn())
+                    }
+                })
+            }
+
+            const reject = (val) => {
+                if((typeof val === 'object' || typeof val === 'function') && val.then) {
+                    promiseResolutionProcedure(this, val, resolve, reject)
+                    return
+                }
+
+                setTimeout(() => {
+                    if(this.state === PENDING) {
+                        this.state = REJECTED
+                        this.value = val
+                        this.rejectedCallbacks.map(fn => fn())
+                    }
+                })
+            }
+
+            // 执行fn，注入方法
+            fn(resolve, reject)
+        }
+        // resolve后触发，这里将回调都缓存起来
+        // 返回MyPromise实现链式调用
+        // 默认onFulfilled，支持空then，透传
+        then(onFulfilled = val => val, onRejected = err => {throw new Error()}) {
+            let promise2 = null
+
+            // 判断状态
+            if(this.state === REJECTED) {
+                promise2 = new MyPromise((resolve, reject) => {
+                    const res = onRejected(this.value)
+                    promiseResolutionProcedure(promise2, res, resolve, reject)
+                })
+            }
+            if(this.state === FULFILLED) {
+                promise2 = new MyPromise((resolve, reject) => {
+                    const res = onFulfilled(this.value)
+                    promiseResolutionProcedure(promise2, res, resolve, reject)
+                })
+            }
+            if(this.state === PENDING) {
+                const promise2 = new MyPromise((resolve, reject) => {
+                    this.resolvedCallbacks.push(() => {
+                        const res = onFulfilled(this.value)
+                        // resolve(res)
+                        // 调用解决过程：判断res的各种情况（thenable对象，promise等）
+                        promiseResolutionProcedure(promise2, res, resolve, reject)
+                    })
+                })
+            }
+            return promise2
+        }
+        // 静态方法all
+        static all(promiseArr) {
+            return new Promise((resolve, reject) => {
+                const resArr = []
+                let sucessTime = 0
+
+                function processResult(index, data) {
+                    resArr.push(data)
+                    successTime++
+                    if(successTime === promiseArr.length) {
+                        resolve(resArr)
+                    }
+                }
+
+                for (let index = 0; index < promisArr.length; index++) {
+                    promiseArr[index].then(data => {
+                        processResult(index, data)
+                    }, err => {
+                        reject(err)
+                    })
+                }
+            })
+        }
+    }
+</script>
+<script>
+    // 执行构造函数：注入resolve和reject，定义then等方法，执行传入函数
+    // 执行传入函数：执行resolve/reject（此时还没有缓存回调，所以需要异步执行）
+    // 执行then：缓存回调
+
+    // 步骤八：支持返回thenable
+    new MyPromise((resolve, reject) => {
+        resolve('step 8')
+    }).then(res => {
+        console.log('res', res)
+        return {
+            then(r) {
+                r("step 8.1")
+            }
+        }
+    })
+    .then(res => {
+        console.log('res', res)
+    })
+    
+    // 步骤一
+    // new MyPromise((resolve, reject) => {
+    //     setTimeout(() => {
+    //         resolve('step 1')
+    //     }, 1000)
+    // }).then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤四：同步resolve
+    // new MyPromise((resolve, reject) => {
+    //     resolve('step 4')
+    // }).then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤五：重复resolve
+    // new MyPromise((resolve, reject) => {
+    //     resolve('step 5')
+    //     resolve('step 5.1')
+    // }).then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤六：链式调用
+    // new MyPromise((resolve, reject) => {
+    //     resolve('step 6')
+    // }).then(res => {
+    //     console.log('res', res)
+    //     return 'step 6.1'
+    // }).then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤七：支持空then
+    // new MyPromise((resolve, reject) => {
+    //     resolve('step 7')
+    // }).then(res => {
+    //     console.log('res', res)
+    //     return 'step 7.1'
+    // })
+    // .then()
+    // .then(res => {
+    //     console.log('res', res)
+    // })
+</script>
+</html>

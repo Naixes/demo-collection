@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+</body>
+<script>
+    const PENDING = "Pending"
+    const FULFILLED = "Fulfilled"
+    const REJECTED = "Rejected"
+
+    // 解决过程
+    function promiseResolutionProcedure(promise2, x, resolve, reject) {
+        // 判断x的值
+        // x是对象或者函数
+        if((typeof x === 'object' || typeof x === 'function') && typeof x !== null) {
+            // x是thenable对象
+            if(typeof x.then === 'function') {
+                // 执行then并注入执行resolve的方法
+                x.then(y => {
+                    // console.log('y', y);
+                    // 这里也要对y进行同样的判断和操作，即规范中的解决过程promiseResolutionProcedure
+                    // resolve(y)
+                    promiseResolutionProcedure(promise2, y, resolve, reject)
+                }, reject)
+            }else {
+                resolve(x)
+            }
+        }else {
+            resolve(x)
+        }
+    }
+
+    class MyPromise {
+        constructor(fn) {
+            // 自身的状态：
+            this.state = PENDING // 存放当前的状态：pending，fulfilled，rejected
+            this.value = undefined
+
+            // 缓存所有的then方法
+            this.resolvedCallbacks = []
+
+            const resolve = (val) => {
+                // 需要将以下操作异步化否则如果同步执行resolve时执行到这里then方法还没有执行，队列中没有可以执行的回调
+                setTimeout(() => {
+                    // 判断当前状态，防止resolve多次
+                    if(this.state === PENDING) {
+                        this.state = FULFILLED
+                        this.value = val
+                        // 触发resolve时会执行then中缓存的方法，可能会有多个方法
+                        // this.resolvedCallbacks.map(fn => fn(val))
+                        // 实现链式调用后这里的val也可以不传了
+                        this.resolvedCallbacks.map(fn => fn())
+                    }
+                })
+            }
+            const reject = (val) => {
+                this.state = REJECTED
+                this.value = val
+            }
+            // 执行fn并注入resolve和reject
+            fn(resolve, reject)
+        }
+        // 设置默认函数，实现透传，即传什么返回什么
+        then(onFulfilled=val=>val){
+            if(this.state === PENDING){
+                // this.resolvedCallbacks.push(onFulfilled)
+                // 返回新的Promise，支持链式调用
+                const promise2 = new MyPromise((resolve, reject) => {
+                    this.resolvedCallbacks.push(() => {
+                        const x = onFulfilled(this.value)
+                        // // 判断x的值
+
+                        // // x是对象或者函数
+                        // if((typeof x === 'object' || typeof x === 'function') && typeof x !== null) {
+                        //     // x是thenable对象
+                        //     if(typeof x.then === 'function') {
+                        //         // 执行then并注入执行resolve的方法
+                        //         x.then(y => {
+                        //             // console.log('y', y);
+                        //             // 这里也要对y进行同样的判断和操作，即规范中的解决过程promiseResolutionProcedure
+                        //             resolve(y)
+                        //         })
+                        //     }else {
+                        //         resolve(x)
+                        //     }
+                        // }else {
+                        //     resolve(x)
+                        // }
+                        promiseResolutionProcedure(promise2, x, resolve, reject)
+                    })
+                })
+
+                return promise2
+            }
+        }
+    }
+</script>
+<script>
+    // 步骤一
+    // new MyPromise((resolve, reject) => {
+    //     setTimeout(() => {
+    //         resolve('step 1')
+    //     }, 1000)
+    // }).then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤四
+    // new MyPromise((resolve, reject) => {
+    //     resolve('step 4')
+    // }).then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤五
+    // new MyPromise((resolve, reject) => {
+    //     resolve('step 5')
+    //     resolve('step 5.1')
+    // }).then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤六
+    // new MyPromise((resolve, reject) => {
+    //     resolve('step 6')
+    // }).then(res => {
+    //     console.log('res', res)
+    //     return 'step 6.1'
+    // }).then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤七
+    // new MyPromise((resolve, reject) => {
+    //     resolve('step 7')
+    // }).then(res => {
+    //     console.log('res', res)
+    //     return 'step 7.1'
+    // })
+    // .then()
+    // .then(res => {
+    //     console.log('res', res)
+    // })
+
+    // 步骤八
+    new MyPromise((resolve, reject) => {
+        resolve('step 8')
+    }).then(res => {
+        console.log('res', res)
+        return {
+            then(r) {
+                r("step 8.1")
+            }
+        }
+    })
+    .then(res => {
+        console.log('res', res)
+    })
+</script>
+</html>
