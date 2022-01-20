@@ -1,3 +1,4 @@
+// 享元模式
 interface Shape {
   draw(): void;
 }

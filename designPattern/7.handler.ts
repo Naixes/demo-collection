@@ -1,3 +1,4 @@
+// 责任链模式
 abstract class Handler {
   public sucesser: Handler;
   //定义一个抽象的处理请求的方法
