@@ -13,7 +13,7 @@
     "core-js": "^2.6.5",
     "less": "^2.7.2",
     "less-loader": "^4.1.0",
-    "node-sass": "^4.11.0",
+    "node-sass": "^7.0.0",
     "sass-loader": "^7.1.0",
     "vue": "^2.6.10",
     "vue-router": "^3.0.6"
